@@ -1,3 +1,82 @@
+
+inspired from # Automatic monitor github cve using Github Actions 
+
+
+## collect
+
+collect certain topic repo in github for auto deploy on vercel or cf worker as idea inspirations
+
+
+
+### unauthorized api 
+1000 limit
+
+### playwright/selenium 
+
+get language repos count
+
+
+### grab repo info from 
+
+https://www.gharchive.org/
+
+## wordcloud
+
+
+
+## auto intro video
+
+https://github.com/sleuth-io/code-video-generator
+```
+from code_video import CodeScene
+
+class MyScene(CodeScene):
+    def construct(self):
+        # This does the actual code display and animation
+        self.animate_code_comments("readme.md")
+    
+        # Wait 5 seconds before finishing
+        self.wait(5)
+```
+
+## auto deploy video
+
+
+
+## database
+
+### airtable
+
+limit space and row limit  but app enriched
+
+https://github.com/gtalarico/pyairtable
+
+
+### firebase
+
+### supabase 
+
+postgresql
+
+### tidb-cloud
+10gb
+mysql
+
+
+
+## charts and media using app on airtable
+
+
+## proxy pool support
+
+
+
+## new site
+
+https://github.com/zernonia/madewithsupabase
+
+
+
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">

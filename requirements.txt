@@ -1,0 +1,8 @@
+peewee
+requests
+mkdocs
+mkdocs-bootstrap386
+pyairtable
+playwright
+colorlog
+httpx
