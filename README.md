@@ -1,5 +1,26 @@
 
 inspired from # Automatic monitor github cve using Github Actions 
+and https://github.com/zernonia/madewithsupabase
+
+
+##  pywebio 配一个关键词提交的页面
+
+https://github.com/wanghaisheng/personal-paper-code-daily
+
+
+
+
+## convert to html
+
+https://github.com/arxiv-vanity/arxiv-vanity
+
+
+## get abstract /intro/ conclusion/ images
+
+
+##  edge tts for 
+
+##  plarwright recording
 
 
 ## collect
@@ -76,6 +97,15 @@ mysql
 https://github.com/zernonia/madewithsupabase
 
 
+
+## deploy
+
+
+### cloudflare cf worker for frontend
+
+### heroku for frontend and backend(data collection and scraping)
+
+### azure/tencent/aliyun serveless for frontend and backend(data collection and scraping)
 
 <!-- PROJECT LOGO -->
 <br />
@@ -177,6 +207,11 @@ alter table views enable row level security;
 ```
 
 ### Views
+
+增加视频字段/intro视频，安装部署视频
+增加paper字段 arxiv文献链接
+增加product产品字段 涉及到软件 硬件等的reference 可以做aff
+
 
 `products_view`
 

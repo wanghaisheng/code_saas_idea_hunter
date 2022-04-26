@@ -367,8 +367,6 @@ async def main(opts):
     apikey=os.environ.get('AIRTABLE_API_KEY')
     baseid=os.environ.get(topic.upper()+'_AIRTABLE_BASE_KEY')
     tableid=os.environ.get(topic.upper()+'_AIRTABLE_TABLE_KEY')
-    api = Api(apikey)
-    table = Table(apikey, baseid, tableid)
     if  os.path.exists('data/'+topic+'.json'):
         with open('data/'+topic+'.json',encoding='utf8') as f1:
             # print(f.read())
@@ -377,7 +375,7 @@ async def main(opts):
                 print('there is empty json,cold start ')
                 for k in keywords:
 
-                    await coldstart(k,table)
+                    await coldstart(k)
     else:
         print('there is no json,cold start ')
         for k in keywords:
@@ -396,89 +394,83 @@ async def latest(opts):
     else:
         keywords.append(opts.keywords)
     topic=opts.topic    
-    apikey=os.environ.get('AIRTABLE_API_KEY')
-    baseid=os.environ.get(topic.upper()+'_AIRTABLE_BASE_KEY')
-    tableid=os.environ.get(topic.upper()+'_AIRTABLE_TABLE_KEY')
-    api = Api(apikey)
-    table = Table(apikey, baseid, tableid)
-    if  os.path.exists('data/'+topic+'.json'):
-        with open('data/'+topic+'.json',encoding='utf8') as f:
-            if len(json.loads(f.read()))>0:
-                
-                for k in keywords:
-                    # Assign tasks
-                    timeSt = str2time(timeSt)
-                    timeEd = str2time(timeEd)
-                    dt = (timeEd - timeSt) / opts.threads
-                    for_count=10
-                    try:
-                        url = "https://api.github.com/search/repositories?q={}&sort=updated".format(topic)
+    if not os.path.exists('data/'+topic+'.json'):
+        print('create a  new file','data/'+topic+'.json')
+        open('data/'+topic+'.json','w',encoding='utf-8').write('')
+    for k in keywords:
+        # Assign tasks
+        timeSt = str2time(timeSt)
+        timeEd = str2time(timeEd)
+        dt = (timeEd - timeSt) / opts.threads
+        for_count=10
+        try:
+            url = "https://api.github.com/search/repositories?q={}&sort=updated".format(topic)
 
-                        reqtem = requests.get(url, auth=(USERNAME, TOKEN)).json()
-                        # print('raw json',reqtem)
-                        total_count = reqtem["total_count"]
-                        print('total result',total_count)
-                        # github api limit 1000
-                        if total_count<100:
-                            for_count=0
-                        else:
-                            for_count = math.ceil(1000 / 100) 
+            reqtem = requests.get(url, auth=(USERNAME, TOKEN)).json()
+            # print('raw json',reqtem)
+            total_count = reqtem["total_count"]
+            print('total result',total_count)
+            # github api limit 1000
+            if total_count<100:
+                for_count=0
+            else:
+                for_count = math.ceil(1000 / 100) 
 
-                        # https://docs.github.com/en/rest/reference/search
-                        # The Search API helps you search for the specific item you want to find. For example, you can find a user or a specific file in a repository. Think of it the way you think of performing a search on Google. It's designed to help you find the one result you're looking for (or maybe the few results you're looking for). Just like searching on Google, you sometimes want to see a few pages of search results so that you can find the item that best meets your needs. To satisfy that need, the GitHub Search API provides up to 1,000 results for each search.
-                        print(total_count)
-                    except:
-                        print('here=========')
-                    proxypool=opts.proxypool
-                    if total_count<1000:
-                        pass
-                    else:
-                        proxylist=[]
+            # https://docs.github.com/en/rest/reference/search
+            # The Search API helps you search for the specific item you want to find. For example, you can find a user or a specific file in a repository. Think of it the way you think of performing a search on Google. It's designed to help you find the one result you're looking for (or maybe the few results you're looking for). Just like searching on Google, you sometimes want to see a few pages of search results so that you can find the item that best meets your needs. To satisfy that need, the GitHub Search API provides up to 1,000 results for each search.
+            print(total_count)
+        except:
+            print('here=========')
+        proxypool=opts.proxypool
+        if total_count<1000:
+            pass
+        else:
+            proxylist=[]
 
-                        while len(proxylist)<20:    
-                            proxy = requests.get(proxypool).text
-                            if requests.get('https://api.github.com',proxies={'http': proxy}, auth=(USERNAME, TOKEN)).status_code==200:
-                                proxylist.append(proxy)
-                                print('add one',proxy)
+            while len(proxylist)<20:    
+                proxy = requests.get(proxypool).text
+                if requests.get('https://api.github.com',proxies={'http': proxy}, auth=(USERNAME, TOKEN)).status_code==200:
+                    proxylist.append(proxy)
+                    print('add one',proxy)
 
-                        language_query_params=[
-                            "language:python",
-                            "language:javascript",
-                            "language:html",
-                            "language:c#",
-                            "language:typescript",
-                            "language:java",
-                            "language:c++",
-                            "language:css",
-                            "language:php",
-                            "language:Jupyter Notebook"                            
-                        ]
+            language_query_params=[
+                "language:python",
+                "language:javascript",
+                "language:html",
+                "language:c#",
+                "language:typescript",
+                "language:java",
+                "language:c++",
+                "language:css",
+                "language:php",
+                "language:Jupyter Notebook"                            
+            ]
 
-                        i=0
-                        for item in language_query_params:
-                            coroutines = []
-                            proxy=random.choice(proxylist)
-                            coroutines.append(
-                                worker(id=i,
-                                    st=timeSt + dt * i,
-                                    ed=timeSt + dt * (i + 1),
-                                    proxylist=proxylist,
-                                    delay=opts.delay,
-                                    timeout=opts.timeout,
-                                    topic=topic,
-                                    keyword=k,
-                                    index=i,
-                                    language=item,
-                                    table=table))
-                            i=i+1
-                            # Run tasks
-                            print('run task',item)
-                            workerRes = await asyncio.gather(*coroutines)
-                            proxylist=[]
-                            print(item,'task result',len(workerRes))
+            i=0
+            for item in language_query_params:
+                coroutines = []
+                proxy=random.choice(proxylist)
+                coroutines.append(
+                    worker(id=i,
+                        st=timeSt + dt * i,
+                        ed=timeSt + dt * (i + 1),
+                        proxylist=proxylist,
+                        delay=opts.delay,
+                        timeout=opts.timeout,
+                        topic=topic,
+                        keyword=k,
+                        index=i,
+                        language=item,
+                        table=''))
+                i=i+1
+                # Run tasks
+                print('run task',item)
+                workerRes = await asyncio.gather(*coroutines)
+                proxylist=[]
+                print(item,'task result',len(workerRes))
 
-                            time.sleep(60)
-                        # js(table,topic)
+                time.sleep(60)
+            # js(table,topic)
 
 def url_ok(url):
     try:
@@ -511,46 +503,7 @@ def get_info(topic):
     except Exception as e:
         print("网络请求发生错误", e)
         return None
-def newbase(dbname):
-    db=Base('apikey', dbname)    
-    return dbname
-def newtable(db,table_name):
-    api_key = os.environ['AIRTABLE_API_KEY']
-
-    table = Table(api_key, db, table_name)
-    return table
-def insert2airtable(table,rows):
-    # print(rows,'====',type(rows[0]))
-    if len(rows)==1:
-
-        table.create(rows[0])
-    else:
-        table.create(rows)
-
-
-def getrowid(table,row):
-
-    formula = match(row)
-    try:
-        id =table.first(formula=formula)['id']
-    except:
-        id = None
-    return id
-
-def updaterow(table,rows):
-    if len(rows)==1:
-        id =getrowid(table,rows[0])
-        if id is None:
-            insert2airtable(table,rows)            
-        else:
-            table.update(id,rows[0])
-    else:
-        for row in rows:
-            id =getrowid(table,[row])
-            if id is None:
-                insert2airtable(table,[row])            
-            else:
-                table.update(id,[row])      
+     
 def formatapiresult(items):
     result=[]
     for item in items:
@@ -585,13 +538,7 @@ def formatapiresult(items):
             }  
             result.append(row)
     return result
-def db_match_airtable(table,items,keyword):
-    print('waiting to check',len(items))
-    r_list = []
-    for row in items:
-        updaterow(table,row)
 
-    return ''
 
 def save(table,keyword,topic,items):
     # 下面是监控用的
@@ -606,7 +553,10 @@ def save(table,keyword,topic,items):
     print('items',items)
     oldcontent=[]
     with open('data/'+topic+'.json',encoding="utf8") as f:
-        oldcontent.extend(json.loads(f.read()))
+        if f.read() =='' or f.read() is None:
+            pass
+        else:
+            oldcontent.extend(json.loads(f.read()))
     print('old content',oldcontent)
     for item in items:
         url=item['url']
@@ -615,7 +565,7 @@ def save(table,keyword,topic,items):
     print(oldcontent)
     update_daily_json("data/{}.json".format(topic),items)
 
-    sorted = db_match_airtable(table,items,keyword)
+    # sorted = db_match_a/irtable(table,items,keyword)
     print("record in db:{}条".format(len(sorted)))
 
 def json2md(items,topic):
